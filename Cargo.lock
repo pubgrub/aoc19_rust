@@ -3,13 +3,19 @@
 version = 3
 
 [[package]]
-name = "aoc19_rust"
-version = "0.1.0"
-
-[[package]]
 name = "day01"
 version = "0.1.0"
+dependencies = [
+ "file",
+]
 
 [[package]]
 name = "day02"
+version = "0.1.0"
+dependencies = [
+ "file",
+]
+
+[[package]]
+name = "file"
 version = "0.1.0"
