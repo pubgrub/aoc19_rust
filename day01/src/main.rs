@@ -1,16 +1,11 @@
-use std::fs::read_to_string;
+use file;
 
-fn read_file(filename:&str) -> Vec<String> {
-    let mut lines = Vec::new();
-
-    for line in read_to_string(filename).unwrap().lines() {
-        lines.push(line.to_string());
-    }
-    lines
-}
+const TEST:i32 = 0;
 
 fn main() {
-    let lines = read_file("data/day01/input.txt");
+    let day = env!("CARGO_PKG_NAME");
+    println!("{day}");
+    let lines = file::read_file(day, TEST);
     println!("Part 1: {}",solve1(&lines));
     println!("Part 2: {}",solve2(&lines));
 }
