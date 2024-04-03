@@ -9,5 +9,6 @@
 resolver = "2"
 members = [
   "day01",
-  "day02"
-, "file"]
+  "day02",
+  "day03",
+  "file"]
