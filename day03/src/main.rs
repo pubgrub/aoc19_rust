@@ -16,11 +16,10 @@ struct WireBySections {
 }
 
 struct WireSectionWithDir {
-    start_x: i32,
-    start_y: i32,
-    dir: i32, // 0=-y, 1=x, 2=y, 3=-x
+    dir: usize, // 0=-y, 1=x, 2=y, 3=-x
     length: i32,
 }
+
 fn main() {
     let day = env!("CARGO_PKG_NAME");
     let lines = file::read_file(day, TEST);
@@ -42,24 +41,41 @@ fn solve1(lines: &Vec<String>) -> i32 {
 }
 
 fn solve2(lines: &Vec<String>) -> i32 {
+    let moves = [(0, 1), (1, 0), (0, -1), (-1, 0)];
     let wires: [Vec<WireSectionWithDir>; 2] = [get_wire(&lines[0]), get_wire(&lines[1])];
-
+    let mut min_distance = i32::MAX;
+    println!(
+        "{:?}",
+        get_crossings(&[
+            get_wire_by_section(&lines[0]),
+            get_wire_by_section(&lines[1])
+        ])
+    );
     for (target_x, target_y) in get_crossings(&[
         get_wire_by_section(&lines[0]),
         get_wire_by_section(&lines[1]),
     ]) {
-        for wire in &wires {
-            let order = match wire.start_dir {
-                0 => [0, 1],
-                1 => [1, 0],
-                _ => panic!("found invalid start_dir"),
-            };
-            let sect_idx = 0;
-            for dir_idx in &order {}
+        let mut sum_distance = 0;
+        'wire: for wire in &wires {
+            let mut x = 0;
+            let mut y = 0;
+            let mut steps = 0;
+            for section in wire {
+                for _step in 0..section.length {
+                    x += moves[section.dir].0;
+                    y += moves[section.dir].1;
+                    steps += 1;
+                    if x == target_x && y == target_y {
+                        sum_distance += steps;
+                        continue 'wire;
+                    }
+                }
+            }
         }
+        min_distance = cmp::min(min_distance, sum_distance)
     }
 
-    0
+    min_distance
 }
 
 fn get_wire_by_section(line: &String) -> WireBySections {
@@ -124,7 +140,7 @@ fn get_wire_by_section(line: &String) -> WireBySections {
 
 fn get_crossings(wires: &[WireBySections; 2]) -> Vec<(i32, i32)> {
     let mut crossings: Vec<(i32, i32)> = vec![];
-    for i in 0..1 {
+    for i in 0..=1 {
         for x_sec in &wires[i].sections[0] {
             for y_sec in &wires[1 - i].sections[1] {
                 if y_sec.base > x_sec.start
@@ -132,7 +148,7 @@ fn get_crossings(wires: &[WireBySections; 2]) -> Vec<(i32, i32)> {
                     && x_sec.base > y_sec.start
                     && x_sec.base < y_sec.end
                 {
-                    crossings.push((x_sec.base, y_sec.base));
+                    crossings.push((y_sec.base, x_sec.base));
                 }
             }
         }
@@ -145,7 +161,7 @@ fn get_wire(line: &String) -> Vec<WireSectionWithDir> {
     let mut wire: Vec<WireSectionWithDir> = vec![];
     let mut x = 0;
     let mut y = 0;
-    let mut dir = -1;
+    let mut dir = 0;
     for s in sections {
         let (dir_char, length) = s.split_at(1);
         let length = length.parse::<i32>().expect("no number found");
@@ -174,12 +190,7 @@ fn get_wire(line: &String) -> Vec<WireSectionWithDir> {
             }
             _ => (),
         }
-        wire.push(WireSectionWithDir {
-            start_x: x,
-            start_y: y,
-            dir,
-            length,
-        });
+        wire.push(WireSectionWithDir { dir, length });
         x = new_x;
         y = new_y;
     }
