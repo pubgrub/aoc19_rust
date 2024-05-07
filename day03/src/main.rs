@@ -44,13 +44,13 @@ fn solve2(lines: &Vec<String>) -> i32 {
     let moves = [(0, 1), (1, 0), (0, -1), (-1, 0)];
     let wires: [Vec<WireSectionWithDir>; 2] = [get_wire(&lines[0]), get_wire(&lines[1])];
     let mut min_distance = i32::MAX;
-    println!(
-        "{:?}",
-        get_crossings(&[
-            get_wire_by_section(&lines[0]),
-            get_wire_by_section(&lines[1])
-        ])
-    );
+    // println!(
+    //     "{:?}",
+    //     get_crossings(&[
+    //         get_wire_by_section(&lines[0]),
+    //         get_wire_by_section(&lines[1])
+    //     ])
+    // );
     for (target_x, target_y) in get_crossings(&[
         get_wire_by_section(&lines[0]),
         get_wire_by_section(&lines[1]),
