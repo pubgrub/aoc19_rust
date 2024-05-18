@@ -8,8 +8,14 @@ pub fn read_file(day: &str, test: i32) -> Vec<String> {
     };
     let mut path = PathBuf::new();
 
+    println!("{}", std::env::consts::OS);
+    let os_path = match std::env::consts::OS {
+        "windows" => "C:\\Users\\fox\\dev\\aoc19_rust\\data",
+        "linux" => "none",
+        _ => "",
+    };
     // hard coded due to different working dir when running or debugging
-    path.push("C:\\Users\\fox\\dev\\aoc19_rust\\data");
+    path.push(os_path);
     path.push(day.to_string());
     path.push(filename);
 
