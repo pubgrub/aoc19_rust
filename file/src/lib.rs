@@ -1,5 +1,6 @@
 use std::fs::read_to_string;
 use std::path::PathBuf;
+//use std::env::current_dir;
 pub fn read_file(day: &str, test: i32) -> Vec<String> {
     //println!("{:?}", current_dir());
     let filename: String = match test {
@@ -8,13 +9,13 @@ pub fn read_file(day: &str, test: i32) -> Vec<String> {
     };
     let mut path = PathBuf::new();
 
-    println!("{}", std::env::consts::OS);
+    println!("running on OS: {}", std::env::consts::OS);
+    // hard coded due to different working dir when running or debugging
     let os_path = match std::env::consts::OS {
         "windows" => "C:\\Users\\fox\\dev\\aoc19_rust\\data",
-        "linux" => "none",
+        "linux" => "/home/fox/aoc19_rust/data",
         _ => "",
     };
-    // hard coded due to different working dir when running or debugging
     path.push(os_path);
     path.push(day.to_string());
     path.push(filename);

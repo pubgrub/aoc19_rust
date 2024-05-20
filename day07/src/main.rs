@@ -17,18 +17,76 @@ fn solve1(lines: &Vec<String>) -> i32 {
     result
 }
 
+#[derive(Debug)]
+struct Computer {
+    program: Vec<i32>,
+    first_run:bool,
+    primer:i32,
+    output:i32,
+}
+
+enum ReturnCode {
+    Value(i32),
+    Halt(),
+}
+
 fn solve2(lines: &Vec<String>) -> i32 {
+    let program = get_program(&lines[0]);
+    let mut combi:Vec<i32> = vec![];
+    let mut combi_list:Vec<Vec<i32>> = vec![];
+    let combinations = get_combinations(combi, combi_list);
+    //println!("{:?}", combinations);
+
+    for com in combinations {
+        let mut computers:Vec<Computer> = vec![];
+        for i in 0..5 {
+            let mut c = Computer {
+                program: program.clone(),
+                first_run: true,
+                primer:com[i],
+                output:0,
+            };
+            computers.push(c);
+        }
+        //println!("{:?}",computers);
+        let mut comp_idx = 0;
+        loop {
+            let input = computers[(comp_idx - 1) % 5].output;
+            if comp_idx == 5 {
+                comp_idx = 0;
+            }
+            let comp: &mut Computer = &mut computers[comp_idx];
+            let mut para:Vec<i32> = vec![]; 
+            if comp.first_run == true {
+                para.push(comp.primer);
+            }
+            para.push(input);
+            comp.output = run_program(&mut comp.program, para);
+        }
+
+    }
+
     let mut result: i32 = 0;
     result
 }
 
-fn get_combinations(combi: Vec<i32>, combi_list: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+fn get_combinations(mut combi: Vec<i32>, mut combi_list: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+    if combi.len() == 5 {
+        combi_list.push(combi);
+        return combi_list;
+    }
     for i in 5..=9 {
         if combi.contains(&i) {
             continue;
         }
+        let mut new_combi = combi.clone();
+        new_combi.push(i);
+        combi_list = get_combinations(new_combi,combi_list);
+    
     }
+    return combi_list;
 }
+
 
 fn chain_programs(program: Vec<i32>, result_in: i32, seeds: Vec<i32>) -> i32 {
     let mut result = result_in;
@@ -36,7 +94,8 @@ fn chain_programs(program: Vec<i32>, result_in: i32, seeds: Vec<i32>) -> i32 {
         if seeds.contains(&i) {
             continue;
         }
-        let my_result = run_program(program.clone(), [i, result_in].to_vec());
+        let mut my_program = program.clone();
+        let my_result = run_program(&mut my_program, [i, result_in].to_vec());
         let mut new_seeds = seeds.clone();
         new_seeds.push(i);
         result = i32::max(
@@ -51,7 +110,7 @@ fn get_program(line: &str) -> Vec<i32> {
     line.split(',').filter_map(|s| s.parse().ok()).collect()
 }
 
-fn run_program(mut program: Vec<i32>, input: Vec<i32>) -> i32 {
+fn run_program(program: &mut Vec<i32>, input: Vec<i32>) -> ReturnCode {
     let mut next_input = 0;
     let mut instr_ptr: usize = 0;
     let mut instr: i32;
@@ -96,7 +155,7 @@ fn run_program(mut program: Vec<i32>, input: Vec<i32>) -> i32 {
         }
 
         match opcode {
-            99 => break,
+            99 => return ReturnCode::Halt(),
             1 => {
                 out_val = para1_val + para2_val;
                 output_addr = program[instr_ptr + 3].try_into().unwrap();
@@ -111,12 +170,13 @@ fn run_program(mut program: Vec<i32>, input: Vec<i32>) -> i32 {
             }
             3 => {
                 program[in_out_addr] = input[next_input];
-                next_input += 1;
+                if next_input < input.len() - 1 {
+                    next_input += 1;
+                }
                 instr_ptr += 2;
             }
             4 => {
-                output = program[in_out_addr];
-                instr_ptr += 2;
+                return ReturnCode::Value(program[in_out_addr]);
             }
             5 => {
                 instr_ptr = if para1_val != 0 {
@@ -146,5 +206,5 @@ fn run_program(mut program: Vec<i32>, input: Vec<i32>) -> i32 {
             _ => (),
         };
     }
-    output
+    panic!("run_program did not return wirh output value");
 }
